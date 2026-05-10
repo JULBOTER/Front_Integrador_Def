@@ -1,9 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCarrito } from "../context/CarritoContext";
 import { formatPrecio } from "../data/productos";
 
 export default function Carrito() {
   const { items, eliminarProducto, vaciarCarrito, totalPrecio } = useCarrito();
+  const navigate = useNavigate();
+
+  const handleGenerarCotizacion = () => {
+    const snapshot = items.map((i) => ({ ...i }));
+    vaciarCarrito();
+    navigate("/cotizacion", { state: { items: snapshot, total: totalPrecio } });
+  };
 
   if (items.length === 0) {
     return (
@@ -24,6 +31,7 @@ export default function Carrito() {
         <table className="table">
           <thead>
             <tr>
+              <th>ID</th>
               <th>Producto</th>
               <th>Precio unitario</th>
               <th>Cantidad</th>
@@ -34,6 +42,9 @@ export default function Carrito() {
           <tbody>
             {items.map((item) => (
               <tr key={item.id}>
+                <td>
+                  <span className="producto-id">{item.id}</span>
+                </td>
                 <td>{item.nombre}</td>
                 <td>{formatPrecio(item.precio)}</td>
                 <td>{item.cantidad}</td>
@@ -63,6 +74,9 @@ export default function Carrito() {
           <Link to="/" className="btn-comprar">
             Seguir comprando
           </Link>
+          <button className="btn-cotizacion" onClick={handleGenerarCotizacion}>
+            📄 Generar cotización
+          </button>
         </div>
       </div>
     </main>

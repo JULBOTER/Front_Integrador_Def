@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { categorias, promociones } from "../data/productos";
 
@@ -16,31 +17,34 @@ const slides = [
   { img: "/img/linea_12.webp", label: "12 - Herrajes y cerrajería", ruta: "/categoria/herrajes" },
 ];
 
-import { useState } from "react";
-
 export default function Home() {
   const [slideActual, setSlideActual] = useState(0);
 
-  const anterior = () => setSlideActual((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  const siguiente = () => setSlideActual((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+  const anterior = () =>
+    setSlideActual((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  const siguiente = () =>
+    setSlideActual((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
 
   return (
     <main className="main">
+
       {/* ¿Quiénes somos? */}
       <section className="quienes-somos">
         <h2 className="titulo2">¿Quiénes somos?</h2>
         <p>
-          <strong>Somos su distribuidor mayorista</strong> de productos para el sector de ferretería
-          y materiales de construcción.
+          <strong>Somos su distribuidor mayorista</strong> de productos para el
+          sector de ferretería y materiales de construcción.
         </p>
         <p>
-          Con <strong>más de 10 años de experiencia</strong> en el sector ferretero y de construcción,
-          en <strong>SOLFECON</strong> reunimos experiencia, confianza y amistad para ayudar a nuestros
-          clientes a alcanzar el éxito.
+          Con <strong>más de 10 años de experiencia</strong> en el sector
+          ferretero y de construcción, en <strong>SOLFECON</strong> reunimos
+          experiencia, confianza y amistad para ayudar a nuestros clientes a
+          alcanzar el éxito.
         </p>
         <p>
-          En <strong>SOLFECON</strong>, garantizamos <em>alianzas estratégicas</em> con proveedores
-          nacionales y extranjeros, asegurando productos de la más alta calidad.
+          En <strong>SOLFECON</strong>, garantizamos{" "}
+          <em>alianzas estratégicas</em> con proveedores nacionales y
+          extranjeros, asegurando productos de la más alta calidad.
         </p>
       </section>
 
@@ -48,13 +52,18 @@ export default function Home() {
       <section className="section">
         <h2 className="titulo2">Nuestras líneas de producto</h2>
         <div className="carousel">
-          <button className="carousel-btn prev" onClick={anterior}>&#8249;</button>
+          <button className="carousel-btn prev" onClick={anterior}>
+            &#8249;
+          </button>
           <div className="carousel-contenido">
             <img
               src={slides[slideActual].img}
               alt={slides[slideActual].label}
               className="carousel-img"
-              onError={(e) => { e.target.src = "https://placehold.co/900x350?text=Línea+de+Producto"; }}
+              onError={(e) => {
+                e.target.src =
+                  "https://placehold.co/900x350?text=Línea+de+Producto";
+              }}
             />
             <div className="carousel-caption">
               <Link to={slides[slideActual].ruta} className="enlace-carousel">
@@ -62,8 +71,11 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <button className="carousel-btn next" onClick={siguiente}>&#8250;</button>
+          <button className="carousel-btn next" onClick={siguiente}>
+            &#8250;
+          </button>
         </div>
+
         {/* Indicadores */}
         <div className="carousel-dots">
           {slides.map((_, i) => (
@@ -92,7 +104,9 @@ export default function Home() {
             <tbody>
               {promociones.map((p) => (
                 <tr key={p.id}>
-                  <td><Link to={p.ruta}>{p.nombre}</Link></td>
+                  <td>
+                    <Link to={p.ruta}>{p.nombre}</Link>
+                  </td>
                   <td>{p.descuento}%</td>
                   <td>{p.fechaInicio}</td>
                   <td>{p.fechaFin}</td>

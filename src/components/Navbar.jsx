@@ -22,7 +22,7 @@ export default function Navbar() {
       <div className="navbar-inner">
         {/* Logo + Marca */}
         <Link to="/" className="navbar-logo">
-          <img src="img/log.webp" alt="Solfecon" width="80" height="65" />
+          <img src="/img/log.webp" alt="Solfecon" width="80" height="65" />
           <span className="navbar-brand-text"></span>
         </Link>
 
@@ -33,9 +33,12 @@ export default function Navbar() {
 
         {/* Links */}
         <div className={`navbar-links ${menuAbierto ? "abierto" : ""}`}>
-          <Link to="/" className="nav-link" onClick={() => setMenuAbierto(false)}>Nosotros</Link>
+          <Link to="/" className="nav-link" onClick={() => setMenuAbierto(false)}>
+            Nosotros
+          </Link>
 
-          <a href="https://solfecon.com/contacto-2/" className="nav-link" target="_blank" rel="noreferrer">
+          <a href="https://solfecon.com/contacto-2/" className="nav-link"
+            target="_blank" rel="noreferrer">
             Contáctanos
           </a>
 
@@ -88,8 +91,11 @@ export default function Navbar() {
           </div>
 
           {/* Carrito */}
-          <Link to="/carrito" className="nav-link carrito-link" onClick={() => setMenuAbierto(false)}>
-            🛒 Carrito {totalItems > 0 && <span className="carrito-badge">{totalItems}</span>}
+          <Link to="/carrito" className="nav-link carrito-link"
+            onClick={() => setMenuAbierto(false)}>
+            🛒 Carrito {totalItems > 0 && (
+              <span className="carrito-badge">{totalItems}</span>
+            )}
           </Link>
 
           {/* Auth */}
@@ -102,9 +108,22 @@ export default function Navbar() {
               <button className="btn-logout" onClick={handleLogout}>Salir</button>
             </div>
           ) : (
-            <Link to="/login" className="nav-link btn-login" onClick={() => setMenuAbierto(false)}>
-              Iniciar sesión
-            </Link>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <Link
+                to="/login"
+                className="nav-link btn-login"
+                onClick={() => setMenuAbierto(false)}
+              >
+                Iniciar sesión
+              </Link>
+              <Link
+                to="/admin/login"
+                className="nav-link btn-admin-login"
+                onClick={() => setMenuAbierto(false)}
+              >
+                🔐 Administración
+              </Link>
+            </div>
           )}
         </div>
       </div>
