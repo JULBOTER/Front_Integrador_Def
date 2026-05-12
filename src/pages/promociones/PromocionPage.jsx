@@ -1,11 +1,13 @@
 import { useParams, Navigate } from "react-router-dom";
-import { promociones, getProductosPorPromocion } from "../../data/productos";
+import { getPromocionesActivas, getProductosPorPromocion } from "../../data/productos";
 import ProductoCard from "../../components/ProductoCard";
 
 export default function PromocionPage() {
   const { id } = useParams();
 
-  const promo = promociones.find((p) => p.id === id);
+  const promociones = getPromocionesActivas();
+  const promo = promociones.find((p) => String(p.id) === String(id));
+
   if (!promo) return <Navigate to="/" replace />;
 
   const listaProductos = getProductosPorPromocion(id);
@@ -19,10 +21,6 @@ export default function PromocionPage() {
             <span className="promo-badge"> — {promo.descuento}% OFF</span>
           )}
         </h2>
-        <p className="promo-fechas">
-          Vigente del <strong>{promo.fechaInicio}</strong> al{" "}
-          <strong>{promo.fechaFin}</strong>
-        </p>
       </div>
 
       {listaProductos.length === 0 ? (
@@ -32,7 +30,11 @@ export default function PromocionPage() {
       ) : (
         <div className="productos-grid">
           {listaProductos.map((producto) => (
-            <ProductoCard key={producto.id} producto={producto} descuento={promo.descuento} />
+            <ProductoCard
+              key={producto.id}
+              producto={producto}
+              descuento={promo.descuento}
+            />
           ))}
         </div>
       )}

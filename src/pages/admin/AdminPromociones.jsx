@@ -5,18 +5,28 @@ export default function AdminPromociones() {
   const [promociones, setPromociones] = useState(() =>
     JSON.parse(localStorage.getItem("Promociones")) || []
   );
-  const [descripcion, setDescripcion] = useState("");
-  const [descuento, setDescuento] = useState("");
+  const [form, setForm] = useState({ descripcion: "", descuento: "" });
   const [imagenBase64, setImagenBase64] = useState("");
   const [idEdicion, setIdEdicion] = useState(null);
   const [buscar, setBuscar] = useState("");
 
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleImagen = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagenBase64(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
   const guardar = () => {
-    if (!descripcion || !descuento || (!imagenBase64 && idEdicion === null)) {
-      alert("Todos los campos son obligatorios");
+    if (!form.descripcion || !form.descuento) {
+      alert("Descripción y descuento son obligatorios");
       return;
     }
-    if (descuento < 0 || descuento > 100) {
+    if (form.descuento < 0 || form.descuento > 100) {
       alert("El descuento debe estar entre 0 y 100");
       return;
     }
@@ -24,7 +34,12 @@ export default function AdminPromociones() {
     if (idEdicion !== null) {
       nuevas = promociones.map((p) =>
         p.id === idEdicion
-          ? { ...p, descripcion, descuento: Number(descuento), imagen: imagenBase64 || p.imagen }
+          ? {
+              ...p,
+              descripcion: form.descripcion,
+              descuento: Number(form.descuento),
+              imagen: imagenBase64 || p.imagen
+            }
           : p
       );
       alert("Registro modificado con éxito");
@@ -32,9 +47,9 @@ export default function AdminPromociones() {
     } else {
       const nuevo = {
         id: promociones.length ? promociones[promociones.length - 1].id + 1 : 1,
-        descripcion,
-        descuento: Number(descuento),
-        imagen: imagenBase64,
+        descripcion: form.descripcion,
+        descuento: Number(form.descuento),
+        imagen: imagenBase64 || "",
       };
       nuevas = [...promociones, nuevo];
       alert("Registro guardado con éxito");
@@ -47,8 +62,7 @@ export default function AdminPromociones() {
   const editar = (id) => {
     const p = promociones.find((x) => x.id === id);
     if (!p) return;
-    setDescripcion(p.descripcion);
-    setDescuento(p.descuento);
+    setForm({ descripcion: p.descripcion, descuento: p.descuento });
     setIdEdicion(id);
   };
 
@@ -60,17 +74,8 @@ export default function AdminPromociones() {
     alert("Registro eliminado con éxito");
   };
 
-  const handleImagen = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagenBase64(ev.target.result);
-    reader.readAsDataURL(file);
-  };
-
   const limpiar = () => {
-    setDescripcion("");
-    setDescuento("");
+    setForm({ descripcion: "", descuento: "" });
     setImagenBase64("");
   };
 
@@ -85,41 +90,43 @@ export default function AdminPromociones() {
         <h2 className="titulo2">Administración de Promociones</h2>
       </div>
 
-      {/* Formulario */}
       <div className="admin-card">
         <div className="campo">
-          <label>Descripción</label>
-          <input type="text" className="admin-input" value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
+          <label>Descripción *</label>
+          <input name="descripcion" type="text" className="admin-input"
+            value={form.descripcion} onChange={handleChange}
             placeholder="Nombre de la promoción" />
         </div>
         <div className="campo">
-          <label>Descuento (%)</label>
-          <input type="number" className="admin-input" value={descuento}
-            onChange={(e) => setDescuento(e.target.value)}
+          <label>Descuento (%) *</label>
+          <input name="descuento" type="number" className="admin-input"
+            value={form.descuento} onChange={handleChange}
             min="0" max="100" placeholder="Ej: 20" />
         </div>
         <div className="campo">
-          <label>Imagen</label>
-          <input type="file" className="admin-input" accept="image/*" onChange={handleImagen} />
+          <label>Imagen (opcional)</label>
+          <input type="file" className="admin-input"
+            accept="image/*" onChange={handleImagen} />
         </div>
-        <button className="btn-admin-guardar" onClick={guardar}>
-          {idEdicion !== null ? "Actualizar" : "Guardar"}
-        </button>
-        {idEdicion !== null && (
-          <button className="btn-admin-cancelar" onClick={() => { setIdEdicion(null); limpiar(); }}>
-            Cancelar
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <button className="btn-admin-guardar" onClick={guardar}>
+            {idEdicion !== null ? "Actualizar" : "Guardar"}
           </button>
-        )}
+          {idEdicion !== null && (
+            <button className="btn-admin-cancelar"
+              onClick={() => { setIdEdicion(null); limpiar(); }}>
+              Cancelar
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Buscador */}
       <div className="admin-buscar">
-        <input type="text" className="admin-input" placeholder="Buscar por descripción..."
+        <input type="text" className="admin-input"
+          placeholder="Buscar por descripción..."
           value={buscar} onChange={(e) => setBuscar(e.target.value)} />
       </div>
 
-      {/* Tabla */}
       <div className="tabla-contenedor">
         <table className="table">
           <thead>
@@ -134,13 +141,22 @@ export default function AdminPromociones() {
           <tbody>
             {filtradas.map((p) => (
               <tr key={p.id}>
-                <td>{p.id}</td>
+                <td><span className="producto-id">{p.id}</span></td>
                 <td>{p.descripcion}</td>
                 <td>{p.descuento}%</td>
-                <td><img src={p.imagen} width="60" alt={p.descripcion} /></td>
                 <td>
-                  <button className="btn-admin-editar" onClick={() => editar(p.id)}>Editar</button>
-                  <button className="btn-admin-eliminar" onClick={() => eliminar(p.id)}>Eliminar</button>
+                  {p.imagen
+                    ? <img src={p.imagen} width="60" alt={p.descripcion} />
+                    : <span style={{ color: "#bbb", fontSize: "0.85rem" }}>Sin imagen</span>
+                  }
+                </td>
+                <td>
+                  <button className="btn-admin-editar" onClick={() => editar(p.id)}>
+                    Editar
+                  </button>
+                  <button className="btn-admin-eliminar" onClick={() => eliminar(p.id)}>
+                    Eliminar
+                  </button>
                 </td>
               </tr>
             ))}

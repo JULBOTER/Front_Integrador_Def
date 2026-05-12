@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCarrito } from "../context/CarritoContext";
-import { categorias, promociones } from "../data/productos";
+import { getLineasActivas, getPromocionesActivas } from "../data/productos";
 
 export default function Navbar() {
   const { usuario, logout } = useAuth();
@@ -12,6 +12,9 @@ export default function Navbar() {
   const [dropLineas, setDropLineas] = useState(false);
   const [dropPromos, setDropPromos] = useState(false);
 
+  const lineasActivas = getLineasActivas();
+  const promocionesActivas = getPromocionesActivas();
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -20,18 +23,15 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-inner">
-        {/* Logo + Marca */}
         <Link to="/" className="navbar-logo">
           <img src="/img/log.webp" alt="Solfecon" width="80" height="65" />
           <span className="navbar-brand-text"></span>
         </Link>
 
-        {/* Botón hamburguesa */}
         <button className="hamburger" onClick={() => setMenuAbierto(!menuAbierto)}>
           ☰
         </button>
 
-        {/* Links */}
         <div className={`navbar-links ${menuAbierto ? "abierto" : ""}`}>
           <Link to="/" className="nav-link" onClick={() => setMenuAbierto(false)}>
             Nosotros
@@ -49,9 +49,9 @@ export default function Navbar() {
             onMouseLeave={() => setDropLineas(false)}
           >
             <span className="nav-link dropdown-toggle">Líneas de Producto ▾</span>
-            {dropLineas && (
+            {dropLineas && lineasActivas.length > 0 && (
               <ul className="dropdown-menu">
-                {categorias.map((cat) => (
+                {lineasActivas.map((cat) => (
                   <li key={cat.id}>
                     <Link
                       to={cat.ruta}
@@ -73,9 +73,9 @@ export default function Navbar() {
             onMouseLeave={() => setDropPromos(false)}
           >
             <span className="nav-link dropdown-toggle">Promociones ▾</span>
-            {dropPromos && (
+            {dropPromos && promocionesActivas.length > 0 && (
               <ul className="dropdown-menu">
-                {promociones.map((p) => (
+                {promocionesActivas.map((p) => (
                   <li key={p.id}>
                     <Link
                       to={p.ruta}
@@ -109,18 +109,12 @@ export default function Navbar() {
             </div>
           ) : (
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <Link
-                to="/login"
-                className="nav-link btn-login"
-                onClick={() => setMenuAbierto(false)}
-              >
+              <Link to="/login" className="nav-link btn-login"
+                onClick={() => setMenuAbierto(false)}>
                 Iniciar sesión
               </Link>
-              <Link
-                to="/admin/login"
-                className="nav-link btn-admin-login"
-                onClick={() => setMenuAbierto(false)}
-              >
+              <Link to="/admin/login" className="nav-link btn-admin-login"
+                onClick={() => setMenuAbierto(false)}>
                 🔐 Administración
               </Link>
             </div>

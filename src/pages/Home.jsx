@@ -1,24 +1,27 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { categorias, promociones } from "../data/productos";
-
-const slides = [
-  { img: "/img/linea_1.jpg", label: "1 - Pinturas y accesorios", ruta: "/categoria/pinturas" },
-  { img: "/img/linea_2.jpg", label: "2 - Construcción", ruta: "/categoria/construccion" },
-  { img: "/img/linea_3.jpg", label: "3 - Plomería y gas", ruta: "/categoria/plomeria" },
-  { img: "/img/linea_4.jpg", label: "4 - Eléctricos", ruta: "/categoria/electricos" },
-  { img: "/img/linea_5.jpg", label: "5 - Agropecuario", ruta: "/categoria/agropecuario" },
-  { img: "/img/linea_6.jpg", label: "6 - Herramientas", ruta: "/categoria/herramientas" },
-  { img: "/img/linea_7.jpg", label: "7 - Seguridad Industrial", ruta: "/categoria/seguridad" },
-  { img: "/img/linea_8.jpg", label: "8 - Limpieza y accesorios", ruta: "/categoria/limpieza" },
-  { img: "/img/linea_9.jpg", label: "9 - Adhesivos y empaques", ruta: "/categoria/adhesivos" },
-  { img: "/img/linea_10.webp", label: "10 - Tornillería", ruta: "/categoria/tornilleria" },
-  { img: "/img/linea_11.webp", label: "11 - Abrasivos y químicos", ruta: "/categoria/abrasivos" },
-  { img: "/img/linea_12.webp", label: "12 - Herrajes y cerrajería", ruta: "/categoria/herrajes" },
-];
+import { getLineasActivas, getPromocionesActivas } from "../data/productos";
 
 export default function Home() {
   const [slideActual, setSlideActual] = useState(0);
+
+  const lineasActivas = getLineasActivas();
+  const promocionesActivas = getPromocionesActivas();
+
+  const slides = [
+    { img: "/img/linea_1.jpg", label: "1 - Pinturas y accesorios", ruta: "/categoria/1" },
+    { img: "/img/linea_2.jpg", label: "2 - Construcción", ruta: "/categoria/2" },
+    { img: "/img/linea_3.jpg", label: "3 - Plomería y gas", ruta: "/categoria/3" },
+    { img: "/img/linea_4.jpg", label: "4 - Eléctricos", ruta: "/categoria/4" },
+    { img: "/img/linea_5.jpg", label: "5 - Agropecuario", ruta: "/categoria/5" },
+    { img: "/img/linea_6.jpg", label: "6 - Herramientas", ruta: "/categoria/6" },
+    { img: "/img/linea_7.jpg", label: "7 - Seguridad Industrial", ruta: "/categoria/7" },
+    { img: "/img/linea_8.jpg", label: "8 - Limpieza y accesorios", ruta: "/categoria/8" },
+    { img: "/img/linea_9.jpg", label: "9 - Adhesivos y empaques", ruta: "/categoria/9" },
+    { img: "/img/linea_10.webp", label: "10 - Tornillería", ruta: "/categoria/10" },
+    { img: "/img/linea_11.webp", label: "11 - Abrasivos y químicos", ruta: "/categoria/11" },
+    { img: "/img/linea_12.webp", label: "12 - Herrajes y cerrajería", ruta: "/categoria/12" },
+  ];
 
   const anterior = () =>
     setSlideActual((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
@@ -52,17 +55,14 @@ export default function Home() {
       <section className="section">
         <h2 className="titulo2">Nuestras líneas de producto</h2>
         <div className="carousel">
-          <button className="carousel-btn prev" onClick={anterior}>
-            &#8249;
-          </button>
+          <button className="carousel-btn prev" onClick={anterior}>&#8249;</button>
           <div className="carousel-contenido">
             <img
               src={slides[slideActual].img}
               alt={slides[slideActual].label}
               className="carousel-img"
               onError={(e) => {
-                e.target.src =
-                  "https://placehold.co/900x350?text=Línea+de+Producto";
+                e.target.src = "https://placehold.co/900x350?text=Línea+de+Producto";
               }}
             />
             <div className="carousel-caption">
@@ -71,12 +71,8 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <button className="carousel-btn next" onClick={siguiente}>
-            &#8250;
-          </button>
+          <button className="carousel-btn next" onClick={siguiente}>&#8250;</button>
         </div>
-
-        {/* Indicadores */}
         <div className="carousel-dots">
           {slides.map((_, i) => (
             <button
@@ -88,45 +84,51 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Tabla de promociones */}
+      {/* Tabla promociones */}
       <section className="section">
         <h2 className="titulo2">Promociones</h2>
-        <div className="tabla-contenedor">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Nombre de Promoción</th>
-                <th>Descuento</th>
-                <th>Fecha inicio</th>
-                <th>Fecha fin</th>
-              </tr>
-            </thead>
-            <tbody>
-              {promociones.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <Link to={p.ruta}>{p.nombre}</Link>
-                  </td>
-                  <td>{p.descuento}%</td>
-                  <td>{p.fechaInicio}</td>
-                  <td>{p.fechaFin}</td>
+        {promocionesActivas.length === 0 ? (
+          <div className="crud-vacio-aviso">
+            <p>No hay promociones disponibles en este momento.</p>
+          </div>
+        ) : (
+          <div className="tabla-contenedor">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Nombre de Promoción</th>
+                  <th>Descuento</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {promocionesActivas.map((p) => (
+                  <tr key={p.id}>
+                    <td><Link to={p.ruta}>{p.nombre}</Link></td>
+                    <td>{p.descuento}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
-      {/* Grid de categorías */}
+      {/* Grid categorías */}
       <section className="section">
         <h2 className="titulo2">Explorar por categoría</h2>
-        <div className="categorias-grid">
-          {categorias.map((cat) => (
-            <Link key={cat.id} to={cat.ruta} className="categoria-card">
-              {cat.nombre}
-            </Link>
-          ))}
-        </div>
+        {lineasActivas.length === 0 ? (
+          <div className="crud-vacio-aviso">
+            <p>No hay líneas de producto disponibles en este momento.</p>
+          </div>
+        ) : (
+          <div className="categorias-grid">
+            {lineasActivas.map((cat) => (
+              <Link key={cat.id} to={cat.ruta} className="categoria-card">
+                {cat.nombre}
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );

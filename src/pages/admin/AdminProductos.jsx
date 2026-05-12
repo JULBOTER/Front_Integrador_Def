@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { formatPrecio, categorias, promociones } from "../../data/productos";
+import { formatPrecio } from "../../data/productos";
 
 export default function AdminProductos() {
   const [productos, setProductos] = useState(() =>
     JSON.parse(localStorage.getItem("ProductosCRUD")) || []
+  );
+
+  const [lineas] = useState(() =>
+    JSON.parse(localStorage.getItem("Productos")) || []
+  );
+  const [promocionesAdmin] = useState(() =>
+    JSON.parse(localStorage.getItem("Promociones")) || []
   );
 
   const [form, setForm] = useState({
@@ -92,7 +99,6 @@ export default function AdminProductos() {
         <h2 className="titulo2">Administración de Productos</h2>
       </div>
 
-      {/* Formulario */}
       <div className="admin-card">
         <div className="campo">
           <label>Descripción</label>
@@ -120,9 +126,9 @@ export default function AdminProductos() {
           <select name="linea" className="admin-input"
             value={form.linea} onChange={handleChange}>
             <option value="">Seleccione</option>
-            {categorias.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.nombre}
+            {lineas.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.id} - {l.descripcion}
               </option>
             ))}
           </select>
@@ -132,9 +138,9 @@ export default function AdminProductos() {
           <select name="promocion" className="admin-input"
             value={form.promocion} onChange={handleChange}>
             <option value="">Seleccione</option>
-            {promociones.map((p) => (
+            {promocionesAdmin.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.nombre}
+                {p.id} - {p.descripcion}
               </option>
             ))}
           </select>
@@ -157,14 +163,12 @@ export default function AdminProductos() {
         </div>
       </div>
 
-      {/* Buscador */}
       <div className="admin-buscar">
         <input type="text" className="admin-input"
           placeholder="Buscar producto..."
           value={buscar} onChange={(e) => setBuscar(e.target.value)} />
       </div>
 
-      {/* Tabla */}
       <div className="tabla-contenedor">
         <table className="table">
           <thead>
@@ -180,23 +184,39 @@ export default function AdminProductos() {
             </tr>
           </thead>
           <tbody>
-            {filtrados.map((p) => (
-              <tr key={p.id}>
-                <td>{p.id}</td>
-                <td>{p.descripcion}</td>
-                <td>{formatPrecio(p.precio)}</td>
-                <td>{p.estado}</td>
-                <td>{categorias.find((c) => c.id === p.linea)?.nombre || p.linea}</td>
-                <td>{promociones.find((pr) => pr.id === p.promocion)?.nombre || p.promocion}</td>
-                <td><img src={p.imagen} width="60" alt={p.descripcion} /></td>
-                <td>
-                  <button className="btn-admin-editar"
-                    onClick={() => editar(p.id)}>Editar</button>
-                  <button className="btn-admin-eliminar"
-                    onClick={() => eliminar(p.id)}>Eliminar</button>
-                </td>
-              </tr>
-            ))}
+            {filtrados.map((p) => {
+              const lineaObj = lineas.find((l) => String(l.id) === String(p.linea));
+              const promoObj = promocionesAdmin.find((pr) => String(pr.id) === String(p.promocion));
+              return (
+                <tr key={p.id}>
+                  <td>{p.id}</td>
+                  <td>{p.descripcion}</td>
+                  <td>{formatPrecio(p.precio)}</td>
+                  <td>{p.estado}</td>
+                  {/* ✅ Línea: ID - Descripción */}
+                  <td>
+                    {lineaObj
+                      ? `${lineaObj.id} - ${lineaObj.descripcion}`
+                      : p.linea}
+                  </td>
+                  {/* ✅ Promoción: ID - Descripción (igual que línea) */}
+                  <td>
+                    {promoObj
+                      ? `${promoObj.id} - ${promoObj.descripcion}`
+                      : p.promocion}
+                  </td>
+                  <td><img src={p.imagen} width="60" alt={p.descripcion} /></td>
+                  <td>
+                    <button className="btn-admin-editar" onClick={() => editar(p.id)}>
+                      Editar
+                    </button>
+                    <button className="btn-admin-eliminar" onClick={() => eliminar(p.id)}>
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
             {filtrados.length === 0 && (
               <tr><td colSpan={8}>No hay registros</td></tr>
             )}

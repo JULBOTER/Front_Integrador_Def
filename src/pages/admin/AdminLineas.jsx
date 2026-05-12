@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 
 export default function AdminLineas() {
@@ -6,20 +6,21 @@ export default function AdminLineas() {
     JSON.parse(localStorage.getItem("Productos")) || []
   );
   const [descripcion, setDescripcion] = useState("");
-  const [imagenBase64, setImagenBase64] = useState("");
   const [idEdicion, setIdEdicion] = useState(null);
   const [buscar, setBuscar] = useState("");
+  const imagenRef = useRef("");
 
   const guardar = () => {
-    if (!descripcion || (!imagenBase64 && idEdicion === null)) {
-      alert("Todos los campos son obligatorios");
+    if (!descripcion.trim()) {
+      alert("La descripción es obligatoria");
       return;
     }
+    const imagenActual = imagenRef.current;
     let nuevas;
     if (idEdicion !== null) {
       nuevas = lineas.map((l) =>
         l.id === idEdicion
-          ? { ...l, descripcion, imagen: imagenBase64 || l.imagen }
+          ? { ...l, descripcion, imagen: imagenActual || l.imagen }
           : l
       );
       alert("Registro modificado con éxito");
@@ -28,7 +29,7 @@ export default function AdminLineas() {
       const nuevo = {
         id: lineas.length ? lineas[lineas.length - 1].id + 1 : 1,
         descripcion,
-        imagen: imagenBase64,
+        imagen: imagenActual || "",
       };
       nuevas = [...lineas, nuevo];
       alert("Registro guardado con éxito");
@@ -42,6 +43,7 @@ export default function AdminLineas() {
     const l = lineas.find((x) => x.id === id);
     if (!l) return;
     setDescripcion(l.descripcion);
+    imagenRef.current = l.imagen || "";
     setIdEdicion(id);
   };
 
@@ -57,13 +59,15 @@ export default function AdminLineas() {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => setImagenBase64(ev.target.result);
+    reader.onload = (ev) => {
+      imagenRef.current = ev.target.result;
+    };
     reader.readAsDataURL(file);
   };
 
   const limpiar = () => {
     setDescripcion("");
-    setImagenBase64("");
+    imagenRef.current = "";
   };
 
   const filtradas = lineas.filter((l) =>
@@ -77,35 +81,51 @@ export default function AdminLineas() {
         <h2 className="titulo2">Administración de Líneas de Producto</h2>
       </div>
 
-      {/* Formulario */}
       <div className="admin-card">
         <div className="campo">
-          <label>Descripción</label>
-          <input type="text" className="admin-input" value={descripcion}
+          <label>Descripción *</label>
+          <input
+            type="text"
+            className="admin-input"
+            value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
-            placeholder="Descripción de la línea" />
+            placeholder="Descripción de la línea"
+          />
         </div>
         <div className="campo">
-          <label>Imagen</label>
-          <input type="file" className="admin-input" accept="image/*" onChange={handleImagen} />
+          <label>Imagen (opcional)</label>
+          <input
+            type="file"
+            className="admin-input"
+            accept="image/*"
+            onChange={handleImagen}
+          />
         </div>
-        <button className="btn-admin-guardar" onClick={guardar}>
-          {idEdicion !== null ? "Actualizar" : "Guardar"}
-        </button>
-        {idEdicion !== null && (
-          <button className="btn-admin-cancelar" onClick={() => { setIdEdicion(null); limpiar(); }}>
-            Cancelar
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <button className="btn-admin-guardar" onClick={guardar}>
+            {idEdicion !== null ? "Actualizar" : "Guardar"}
           </button>
-        )}
+          {idEdicion !== null && (
+            <button
+              className="btn-admin-cancelar"
+              onClick={() => { setIdEdicion(null); limpiar(); }}
+            >
+              Cancelar
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Buscador */}
       <div className="admin-buscar">
-        <input type="text" className="admin-input" placeholder="Buscar por descripción..."
-          value={buscar} onChange={(e) => setBuscar(e.target.value)} />
+        <input
+          type="text"
+          className="admin-input"
+          placeholder="Buscar por descripción..."
+          value={buscar}
+          onChange={(e) => setBuscar(e.target.value)}
+        />
       </div>
 
-      {/* Tabla */}
       <div className="tabla-contenedor">
         <table className="table">
           <thead>
@@ -119,12 +139,21 @@ export default function AdminLineas() {
           <tbody>
             {filtradas.map((l) => (
               <tr key={l.id}>
-                <td>{l.id}</td>
+                <td><span className="producto-id">{l.id}</span></td>
                 <td>{l.descripcion}</td>
-                <td><img src={l.imagen} width="60" alt={l.descripcion} /></td>
                 <td>
-                  <button className="btn-admin-editar" onClick={() => editar(l.id)}>Editar</button>
-                  <button className="btn-admin-eliminar" onClick={() => eliminar(l.id)}>Eliminar</button>
+                  {l.imagen
+                    ? <img src={l.imagen} width="60" alt={l.descripcion} />
+                    : <span style={{ color: "#bbb", fontSize: "0.85rem" }}>Sin imagen</span>
+                  }
+                </td>
+                <td>
+                  <button className="btn-admin-editar" onClick={() => editar(l.id)}>
+                    Editar
+                  </button>
+                  <button className="btn-admin-eliminar" onClick={() => eliminar(l.id)}>
+                    Eliminar
+                  </button>
                 </td>
               </tr>
             ))}

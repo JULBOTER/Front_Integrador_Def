@@ -1,11 +1,13 @@
 import { useParams, Navigate } from "react-router-dom";
-import { categorias, getProductosPorCategoria } from "../../data/productos";
+import { getLineasActivas, getProductosPorCategoria } from "../../data/productos";
 import ProductoCard from "../../components/ProductoCard";
 
 export default function CategoriaPage() {
   const { id } = useParams();
 
-  const categoria = categorias.find((c) => c.id === id);
+  const lineas = getLineasActivas();
+  const categoria = lineas.find((c) => String(c.id) === String(id));
+
   if (!categoria) return <Navigate to="/" replace />;
 
   const lista = getProductosPorCategoria(id);

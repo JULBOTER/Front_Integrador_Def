@@ -22,13 +22,67 @@ export default function AdminCotizaciones() {
     }
   };
 
-  const eliminar = (id) => {
-    if (!confirm("¿Eliminar esta cotización?")) return;
+  const eliminarCotizacion = (id) => {
+    if (!confirm("¿Eliminar esta cotización completa?")) return;
     const nuevas = cotizaciones.filter((c) => c.id !== id);
     localStorage.setItem("solfecon_cotizaciones", JSON.stringify(nuevas));
     setCotizaciones(nuevas);
     if (detalle?.id === id) setDetalle(null);
     alert("Cotización eliminada con éxito");
+  };
+
+  // ✅ Eliminar un detalle específico
+  // Si la cotización queda sin detalles, se elimina automáticamente
+  const eliminarDetalle = (idDetalle, idCotizacion) => {
+    if (!confirm("¿Eliminar este registro del detalle?")) return;
+
+    const cotizacionActual = cotizaciones.find((c) => c.id === idCotizacion);
+    if (!cotizacionActual) return;
+
+    const nuevosDetalles = (cotizacionActual.detalles || []).filter(
+      (d) => d.id_detalle_cotizacion !== idDetalle
+    );
+    const nuevosItems = (cotizacionActual.items || []).filter(
+      (_, i) => {
+        const detalleFiltrado = (cotizacionActual.detalles || [])[i];
+        return detalleFiltrado?.id_detalle_cotizacion !== idDetalle;
+      }
+    );
+
+    let nuevasCotizaciones;
+
+    if (nuevosDetalles.length === 0) {
+      // ✅ Si no quedan detalles, eliminar la cotización completa
+      nuevasCotizaciones = cotizaciones.filter((c) => c.id !== idCotizacion);
+      setDetalle(null);
+      alert("Último registro eliminado — la cotización fue eliminada automáticamente");
+    } else {
+      // Recalcular total
+      const nuevoTotal = nuevosDetalles.reduce(
+        (acc, d) => acc + d.precio_unitario * d.cantidad, 0
+      );
+
+      const cotizacionActualizada = {
+        ...cotizacionActual,
+        detalles: nuevosDetalles,
+        items: nuevosItems,
+        total: nuevoTotal,
+      };
+
+      nuevasCotizaciones = cotizaciones.map((c) =>
+        c.id === idCotizacion ? cotizacionActualizada : c
+      );
+
+      // Actualizar el detalle visible
+      setDetalle(cotizacionActualizada);
+      alert("Registro eliminado con éxito");
+    }
+
+    localStorage.setItem(
+      "solfecon_cotizaciones",
+      JSON.stringify(nuevasCotizaciones)
+    );
+    setCotizaciones(nuevasCotizaciones);
   };
 
   const filtradas = cotizaciones.filter((c) =>
@@ -69,7 +123,10 @@ export default function AdminCotizaciones() {
             <h3 style={{ color: "var(--rojo)" }}>
               Detalle — Cotización #{detalle.id}
             </h3>
-            <button className="btn-admin-cancelar" onClick={() => setDetalle(null)}>
+            <button
+              className="btn-admin-cancelar"
+              onClick={() => setDetalle(null)}
+            >
               Cerrar
             </button>
           </div>
@@ -99,38 +156,50 @@ export default function AdminCotizaciones() {
                   <th>Precio unitario</th>
                   <th>Cantidad</th>
                   <th>Subtotal</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody>
-                {(detalle.detalles || detalle.items || []).map((det, i) => {
-                  const idDetalle = det.id_detalle_cotizacion || (i + 1);
-                  const idCot = det.id_cotizacion || detalle.id;
-                  const idProd = det.id_producto || det.id;
-                  const nombre = det.nombre;
-                  const precio = det.precio_unitario || det.precio;
-                  const cantidad = det.cantidad;
-                  return (
-                    <tr key={idDetalle}>
-                      <td>
-                        <span className="producto-id">{idDetalle}</span>
-                      </td>
-                      <td>
-                        <span className="producto-id">{idCot}</span>
-                      </td>
-                      <td>
-                        <span className="producto-id">{idProd}</span>
-                      </td>
-                      <td>{nombre}</td>
-                      <td>{formatPrecio(precio)}</td>
-                      <td>{cantidad}</td>
-                      <td>{formatPrecio(precio * cantidad)}</td>
-                    </tr>
-                  );
-                })}
+                {(detalle.detalles || []).map((det) => (
+                  <tr key={det.id_detalle_cotizacion}>
+                    <td>
+                      <span className="producto-id">
+                        {det.id_detalle_cotizacion}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="producto-id">
+                        {det.id_cotizacion}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="producto-id">
+                        {det.id_producto}
+                      </span>
+                    </td>
+                    <td>{det.nombre}</td>
+                    <td>{formatPrecio(det.precio_unitario)}</td>
+                    <td>{det.cantidad}</td>
+                    <td>{formatPrecio(det.precio_unitario * det.cantidad)}</td>
+                    <td>
+                      <button
+                        className="btn-admin-eliminar"
+                        onClick={() =>
+                          eliminarDetalle(
+                            det.id_detalle_cotizacion,
+                            detalle.id
+                          )
+                        }
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
               <tfoot>
                 <tr className="cotizacion-total-row">
-                  <td colSpan={6}><strong>TOTAL</strong></td>
+                  <td colSpan={7}><strong>TOTAL</strong></td>
                   <td><strong>{formatPrecio(detalle.total)}</strong></td>
                 </tr>
               </tfoot>
@@ -180,7 +249,7 @@ export default function AdminCotizaciones() {
                     </button>
                     <button
                       className="btn-admin-eliminar"
-                      onClick={() => eliminar(cot.id)}
+                      onClick={() => eliminarCotizacion(cot.id)}
                     >
                       Eliminar
                     </button>

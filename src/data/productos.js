@@ -1,7 +1,3 @@
-// =============================================
-// CATEGORÍAS Y PROMOCIONES — SIEMPRE FIJAS
-// =============================================
-
 export const categorias = [
   { id: "pinturas", nombre: "1 - Pinturas y accesorios", ruta: "/categoria/pinturas" },
   { id: "construccion", nombre: "2 - Construcción", ruta: "/categoria/construccion" },
@@ -18,19 +14,51 @@ export const categorias = [
 ];
 
 export const promociones = [
-  { id: "navidad", nombre: "Navidad", descuento: 30, ruta: "/promocion/navidad", fechaInicio: "1 dic 2025", fechaFin: "6 ene 2026" },
-  { id: "saldos", nombre: "Saldos", descuento: 50, ruta: "/promocion/saldos", fechaInicio: "30 jun 2025", fechaFin: "6 ene 2026" },
-  { id: "seguridad", nombre: "Productos Seguridad", descuento: 10, ruta: "/promocion/seguridad", fechaInicio: "15 jun 2025", fechaFin: "6 jul 2025" },
-  { id: "sin_promocion", nombre: "Sin promoción", descuento: 0, ruta: "/promocion/sin_promocion", fechaInicio: "1 ene 2025", fechaFin: "31 dic 2025" },
+  { id: "navidad", nombre: "Navidad", descuento: 30, ruta: "/promocion/navidad" },
+  { id: "saldos", nombre: "Saldos", descuento: 50, ruta: "/promocion/saldos" },
+  { id: "seguridad", nombre: "Productos Seguridad", descuento: 10, ruta: "/promocion/seguridad" },
+  { id: "sin_promocion", nombre: "Sin promoción", descuento: 0, ruta: "/promocion/sin_promocion" },
 ];
 
-// =============================================
-// FUNCIONES PARA OBTENER PRODUCTOS DEL CRUD
-// =============================================
+export function getLineasActivas() {
+  try {
+    const data = localStorage.getItem("Productos");
+    if (!data) return [];
+    const lineasAdmin = JSON.parse(data);
+    if (!Array.isArray(lineasAdmin) || lineasAdmin.length === 0) return [];
+    return lineasAdmin.map((l) => ({
+      id: String(l.id),
+      nombre: `${l.id} - ${l.descripcion}`,
+      ruta: `/categoria/${l.id}`,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export function getPromocionesActivas() {
+  try {
+    const data = localStorage.getItem("Promociones");
+    if (!data) return [];
+    const promosAdmin = JSON.parse(data);
+    if (!Array.isArray(promosAdmin) || promosAdmin.length === 0) return [];
+    return promosAdmin.map((p) => ({
+      id: String(p.id),
+      nombre: `${p.id} - ${p.descripcion}`,
+      descuento: Number(p.descuento) || 0,
+      ruta: `/promocion/${p.id}`,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 export function getProductosPorCategoria(categoriaId) {
   try {
-    const productosAdmin = JSON.parse(localStorage.getItem("ProductosCRUD")) || [];
+    const data = localStorage.getItem("ProductosCRUD");
+    if (!data) return [];
+    const productosAdmin = JSON.parse(data);
+    if (!Array.isArray(productosAdmin)) return [];
     return productosAdmin
       .filter((p) => String(p.linea) === String(categoriaId))
       .map((p) => ({
@@ -48,7 +76,10 @@ export function getProductosPorCategoria(categoriaId) {
 
 export function getProductosPorPromocion(promocionId) {
   try {
-    const productosAdmin = JSON.parse(localStorage.getItem("ProductosCRUD")) || [];
+    const data = localStorage.getItem("ProductosCRUD");
+    if (!data) return [];
+    const productosAdmin = JSON.parse(data);
+    if (!Array.isArray(productosAdmin)) return [];
     return productosAdmin
       .filter((p) => String(p.promocion) === String(promocionId))
       .map((p) => ({
@@ -63,10 +94,6 @@ export function getProductosPorPromocion(promocionId) {
     return [];
   }
 }
-
-// =============================================
-// UTILIDADES
-// =============================================
 
 export const formatPrecio = (precio) =>
   new Intl.NumberFormat("es-CO", {
