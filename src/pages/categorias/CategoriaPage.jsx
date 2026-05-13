@@ -12,6 +12,10 @@ export default function CategoriaPage() {
 
   const lista = getProductosPorCategoria(id);
 
+  // ✅ Leer promociones del CRUD para obtener el descuento de cada producto
+  const promocionesAdmin = JSON.parse(localStorage.getItem("Promociones")) || [];
+  const productosAdmin = JSON.parse(localStorage.getItem("ProductosCRUD")) || [];
+
   return (
     <main className="main">
       <h2 className="titulo2">{categoria.nombre}</h2>
@@ -21,9 +25,30 @@ export default function CategoriaPage() {
         </div>
       ) : (
         <div className="productos-grid">
-          {lista.map((producto) => (
-            <ProductoCard key={producto.id} producto={producto} />
-          ))}
+          {lista.map((producto) => {
+            // ✅ Buscar el producto en el CRUD para obtener su promoción
+            const productoCRUD = productosAdmin.find(
+              (p) => String(p.id) === String(producto.id)
+            );
+
+            // ✅ Buscar la promoción asignada al producto
+            const promocion = productoCRUD
+              ? promocionesAdmin.find(
+                  (pr) => String(pr.id) === String(productoCRUD.promocion)
+                )
+              : null;
+
+            // ✅ Descuento de la promoción asignada (0 si no tiene)
+            const descuento = promocion ? Number(promocion.descuento) : 0;
+
+            return (
+              <ProductoCard
+                key={producto.id}
+                producto={producto}
+                descuento={descuento}
+              />
+            );
+          })}
         </div>
       )}
     </main>
